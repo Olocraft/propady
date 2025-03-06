@@ -57,7 +57,7 @@ const Navbar = () => {
     >
       <div className="container mx-auto px-4 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
-          <img src="/lovable-uploads/99b9e28a-439c-4750-90ce-22d5c7d601af.png" alt="Propady" className="h-10 w-auto" />
+          <img src="/lovable-uploads/9398db2b-3e2f-4316-817e-fcafba350ebd.png" alt="Propady" className="h-10 w-auto" />
           <span className="text-white font-bold text-xl">Propady</span>
         </Link>
 

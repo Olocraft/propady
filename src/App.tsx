@@ -12,6 +12,7 @@ import PropertyPage from "./pages/PropertyPage";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
+import Profile from "./pages/Profile";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +32,7 @@ const App = () => (
             {/* Protected Routes */}
             <Route element={<PrivateRoute />}>
               <Route path="/manage" element={<Dashboard />} />
+              <Route path="/profile" element={<Profile />} />
             </Route>
             
             <Route path="*" element={<NotFound />} />
