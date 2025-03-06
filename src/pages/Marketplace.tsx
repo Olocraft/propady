@@ -6,82 +6,7 @@ import PropertyCard from '@/components/ui/PropertyCard';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { Filter, Grid, List } from 'lucide-react';
-
-// Mock data
-const properties = [
-  {
-    id: "property1",
-    title: "Bungalow Terrace",
-    price: "$130k",
-    image: "/lovable-uploads/9cf1c88a-5f50-447e-a034-cb6515047de2.png",
-    location: "Lekki, Lagos",
-    agency: "Horizon Estate, Ikoodu Lagos State",
-    verified: true,
-    roi: "12.08%",
-    annualReturn: "12.08%",
-    supportedChains: ["ethereum", "solana", "polygon"]
-  },
-  {
-    id: "property2",
-    title: "Incomplete Tower",
-    price: "$142k",
-    image: "/lovable-uploads/6e09ce2d-feb2-4a17-b898-f69caf6eab4e.png",
-    location: "Lekki, Lagos",
-    agency: "Horizon Estate, Ikoodu Lagos State",
-    verified: false,
-    roi: "12.08%",
-    annualReturn: "12.08%",
-    supportedChains: ["ethereum", "solana"]
-  },
-  {
-    id: "property3",
-    title: "Bungalow Terrace",
-    price: "$150k",
-    image: "/lovable-uploads/9cf1c88a-5f50-447e-a034-cb6515047de2.png",
-    location: "Lekki, Lagos",
-    agency: "Horizon Estate, Ikoodu Lagos State",
-    verified: true,
-    roi: "12.08%",
-    annualReturn: "12.08%",
-    supportedChains: ["ethereum", "polygon"]
-  },
-  {
-    id: "property4",
-    title: "Modern Apartment",
-    price: "$125k",
-    image: "/lovable-uploads/3eeac279-1354-4519-87b9-7561d83e730b.png",
-    location: "Lekki, Lagos",
-    agency: "Eastern Homes, Ikoodu Lagos State",
-    verified: true,
-    roi: "10.5%",
-    annualReturn: "10.5%",
-    supportedChains: ["ethereum", "binance"]
-  },
-  {
-    id: "property5",
-    title: "Glass Villa",
-    price: "$210k",
-    image: "/lovable-uploads/0ef9a1b3-5100-4a51-b446-be1f0172c4fd.png",
-    location: "Lekki, Lagos",
-    agency: "Kingdom Estates, Lagos",
-    verified: true,
-    roi: "14.2%",
-    annualReturn: "14.2%",
-    supportedChains: ["ethereum", "solana", "binance"]
-  },
-  {
-    id: "property6",
-    title: "Luxury Penthouse",
-    price: "$180k",
-    image: "/lovable-uploads/9cf1c88a-5f50-447e-a034-cb6515047de2.png",
-    location: "Ikoyi, Lagos",
-    agency: "Homez, Lagos",
-    verified: false,
-    roi: "11.8%",
-    annualReturn: "11.8%",
-    supportedChains: ["ethereum", "polygon"]
-  }
-];
+import { fetchAllProperties, mapPropertyToDisplay, PropertyDisplay } from '@/services/propertyService';
 
 // Mock agency data
 const agencies = [
@@ -145,10 +70,28 @@ const Marketplace = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('land');
   const [viewMode, setViewMode] = useState('trending');
+  const [properties, setProperties] = useState<PropertyDisplay[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Scroll to top when component mounts
     window.scrollTo(0, 0);
+    
+    // Fetch properties from Supabase
+    const getProperties = async () => {
+      setLoading(true);
+      try {
+        const propertyData = await fetchAllProperties();
+        const displayProperties = propertyData.map(mapPropertyToDisplay);
+        setProperties(displayProperties);
+      } catch (error) {
+        console.error("Error fetching properties:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    getProperties();
   }, []);
 
   return (
@@ -190,15 +133,29 @@ const Marketplace = () => {
           </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
-          {properties.map((property, index) => (
-            <PropertyCard
-              key={index}
-              {...property}
-              className="animate-enter"
-            />
-          ))}
-        </div>
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+            {[1, 2, 3, 4, 5, 6].map((_, index) => (
+              <div key={index} className="bg-white/5 rounded-xl h-[400px] animate-pulse"></div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+            {properties.length > 0 ? (
+              properties.map((property, index) => (
+                <PropertyCard
+                  key={property.id}
+                  {...property}
+                  className="animate-enter"
+                />
+              ))
+            ) : (
+              <div className="col-span-3 text-center py-10">
+                <p className="text-white text-lg">No properties found. Check back later!</p>
+              </div>
+            )}
+          </div>
+        )}
         
         <div className="mb-8 flex items-center gap-4">
           <h2 className="text-2xl font-bold text-white">Trending Real Estate Agencies</h2>
