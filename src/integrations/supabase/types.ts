@@ -9,7 +9,116 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      investments: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          investor_id: string
+          property_id: string
+          tokens: number
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          investor_id: string
+          property_id: string
+          tokens: number
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          investor_id?: string
+          property_id?: string
+          tokens?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investments_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          updated_at: string
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id: string
+          updated_at?: string
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
+      properties: {
+        Row: {
+          area: number | null
+          bathrooms: number | null
+          bedrooms: number | null
+          blockchain_verified: boolean | null
+          created_at: string
+          description: string | null
+          id: string
+          images: string[] | null
+          location: string
+          owner_id: string
+          price: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          area?: number | null
+          bathrooms?: number | null
+          bedrooms?: number | null
+          blockchain_verified?: boolean | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          images?: string[] | null
+          location: string
+          owner_id: string
+          price: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          area?: number | null
+          bathrooms?: number | null
+          bedrooms?: number | null
+          blockchain_verified?: boolean | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          images?: string[] | null
+          location?: string
+          owner_id?: string
+          price?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

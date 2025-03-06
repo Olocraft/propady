@@ -1,14 +1,25 @@
 
 import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, User, ShoppingCart, Menu } from "lucide-react";
+import { Search, User, ShoppingCart, Menu, LogOut } from "lucide-react";
+import { useAuth } from '@/contexts/AuthContext';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -28,6 +39,16 @@ const Navbar = () => {
     setIsMobileMenuOpen(false);
   }, [location]);
 
+  const handleAuthAction = () => {
+    if (user) {
+      // If user is logged in, show dropdown
+      return;
+    } else {
+      // If user is not logged in, redirect to auth page
+      navigate('/auth');
+    }
+  };
+
   return (
     <header 
       className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
@@ -36,10 +57,7 @@ const Navbar = () => {
     >
       <div className="container mx-auto px-4 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
-          <div className="relative w-10 h-10 flex items-center justify-center">
-            <div className="absolute inset-0 bg-propady-purple rounded-lg animate-pulse-subtle"></div>
-            <span className="relative text-white font-bold text-xl">P</span>
-          </div>
+          <img src="/lovable-uploads/99b9e28a-439c-4750-90ce-22d5c7d601af.png" alt="Propady" className="h-10 w-auto" />
           <span className="text-white font-bold text-xl">Propady</span>
         </Link>
 
@@ -69,14 +87,42 @@ const Navbar = () => {
         {/* Right Actions */}
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon" className="text-white hover:bg-white/10">
-            <User size={20} />
-          </Button>
-          <Button variant="ghost" size="icon" className="text-white hover:bg-white/10">
             <ShoppingCart size={20} />
           </Button>
-          <Button variant="default" className="hidden md:flex bg-propady-purple hover:bg-propady-purple-light text-white">
-            Sign up
-          </Button>
+
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 rounded-full">
+                  <User size={20} />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="glass-morphism border-white/20 text-white">
+                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuSeparator className="bg-white/20" />
+                <DropdownMenuItem onClick={() => navigate('/profile')}>
+                  <User className="mr-2 h-4 w-4" />
+                  <span>Profile</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/manage')}>
+                  <span>Dashboard</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator className="bg-white/20" />
+                <DropdownMenuItem onClick={signOut} className="text-red-400">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Log out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Button 
+              variant="default" 
+              className="hidden md:flex bg-propady-purple hover:bg-propady-purple-light text-white"
+              onClick={handleAuthAction}
+            >
+              Sign up
+            </Button>
+          )}
           
           {/* Mobile Menu Button */}
           <Button 
@@ -115,9 +161,24 @@ const Navbar = () => {
               </Link>
             </div>
             
-            <Button variant="default" className="w-full bg-propady-purple hover:bg-propady-purple-light text-white">
-              Sign up
-            </Button>
+            {user ? (
+              <Button 
+                variant="outline" 
+                className="w-full border-white/20 text-white hover:bg-white/10"
+                onClick={signOut}
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                Log out
+              </Button>
+            ) : (
+              <Button 
+                variant="default" 
+                className="w-full bg-propady-purple hover:bg-propady-purple-light text-white"
+                onClick={() => navigate('/auth')}
+              >
+                Sign up
+              </Button>
+            )}
           </div>
         </div>
       )}
