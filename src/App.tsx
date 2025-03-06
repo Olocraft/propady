@@ -13,6 +13,7 @@ import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
+import AiAssistant from "./pages/AiAssistant";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ const App = () => (
             <Route path="/marketplace" element={<Marketplace />} />
             <Route path="/property/:id" element={<PropertyPage />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/ai-assistant" element={<AiAssistant />} />
             
             {/* Protected Routes */}
             <Route element={<PrivateRoute />}>

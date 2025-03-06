@@ -1,10 +1,16 @@
-
-import { useState, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Search, User, ShoppingCart, Menu, LogOut } from "lucide-react";
+import { useState } from 'react';
+import { Link, NavLink } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,176 +18,163 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu"
+import { AlignJustify } from 'lucide-react';
+
+enum AuthStatus {
+  LOGIN,
+  SIGNUP,
+  NONE
+}
 
 const Navbar = () => {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const location = useLocation();
-  const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const [showAuthModal, setShowAuthModal] = useState(AuthStatus.NONE);
+  const isLoggedIn = !!user;
 
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 10) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
-    };
+  const openLoginModal = () => {
+    setShowAuthModal(AuthStatus.LOGIN);
+  };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  const openSignupModal = () => {
+    setShowAuthModal(AuthStatus.SIGNUP);
+  };
 
-  useEffect(() => {
-    // Close mobile menu when route changes
-    setIsMobileMenuOpen(false);
-  }, [location]);
-
-  const handleAuthAction = () => {
-    if (user) {
-      // If user is logged in, show dropdown
-      return;
-    } else {
-      // If user is not logged in, redirect to auth page
-      navigate('/auth');
-    }
+  const closeAuthModal = () => {
+    setShowAuthModal(AuthStatus.NONE);
   };
 
   return (
-    <header 
-      className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
-        isScrolled ? 'glass-morphism py-2' : 'py-4 bg-transparent'
-      }`}
-    >
-      <div className="container mx-auto px-4 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2">
-          <img src="/lovable-uploads/9398db2b-3e2f-4316-817e-fcafba350ebd.png" alt="Propady" className="h-10 w-auto" />
-          <span className="text-white font-bold text-xl">Propady</span>
-        </Link>
-
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center space-x-6">
-          <Link to="/marketplace" className="text-white hover:text-propady-mint transition-colors">
-            Marketplace
-          </Link>
-          <Link to="/projects" className="text-white hover:text-propady-mint transition-colors">
-            Projects
-          </Link>
-          <Link to="/manage" className="text-white hover:text-propady-mint transition-colors">
-            Manage Prop
-          </Link>
-        </nav>
-
-        {/* Search Bar */}
-        <div className="hidden md:flex items-center relative max-w-md w-full mx-4">
-          <Input
-            type="text"
-            placeholder="Explore Properties"
-            className="pl-10 pr-4 py-2 rounded-full bg-white/10 border-white/20 text-white placeholder-white/60 focus:ring-propady-mint"
-          />
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 h-4 w-4" />
-        </div>
-
-        {/* Right Actions */}
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" className="text-white hover:bg-white/10">
-            <ShoppingCart size={20} />
-          </Button>
-
-          {user ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 rounded-full">
-                  <User size={20} />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="glass-morphism border-white/20 text-white">
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                <DropdownMenuSeparator className="bg-white/20" />
-                <DropdownMenuItem onClick={() => navigate('/profile')}>
-                  <User className="mr-2 h-4 w-4" />
-                  <span>Profile</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate('/manage')}>
-                  <span>Dashboard</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator className="bg-white/20" />
-                <DropdownMenuItem onClick={signOut} className="text-red-400">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Log out</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          ) : (
-            <Button 
-              variant="default" 
-              className="hidden md:flex bg-propady-purple hover:bg-propady-purple-light text-white"
-              onClick={handleAuthAction}
-            >
-              Sign up
-            </Button>
-          )}
-          
-          {/* Mobile Menu Button */}
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="md:hidden text-white"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          >
-            <Menu size={24} />
-          </Button>
-        </div>
-      </div>
-
-      {/* Mobile Menu */}
-      {isMobileMenuOpen && (
-        <div className="md:hidden glass-morphism mt-1 py-4 px-4 animate-fade-in">
-          <div className="flex flex-col space-y-4">
-            <Input
-              type="text"
-              placeholder="Explore Properties"
-              className="pl-10 pr-4 py-2 rounded-full bg-white/10 border-white/20 text-white placeholder-white/60"
-            />
-            <div className="absolute left-8 top-[4.5rem] text-white/60">
-              <Search size={16} />
-            </div>
+    <header className="fixed top-0 left-0 w-full z-50 bg-background/90 backdrop-blur-md border-b border-white/10">
+      <div className="container mx-auto px-4">
+        <div className="flex h-16 items-center justify-between">
+          <div className="flex items-center space-x-8">
+            <Link to="/" className="flex items-center gap-2">
+              <div className="relative w-8 h-8 flex items-center justify-center">
+                <div className="absolute inset-0 bg-propady-mint rounded-lg"></div>
+                <span className="relative text-black font-bold text-lg">P</span>
+              </div>
+              <span className="text-white font-bold">Propady</span>
+            </Link>
             
-            <div className="flex flex-col space-y-2 pt-2">
-              <Link to="/marketplace" className="text-white hover:text-propady-mint p-2 rounded-md hover:bg-white/5 transition-colors">
+            <nav className="hidden md:flex items-center space-x-6">
+              <NavLink 
+                to="/marketplace" 
+                className={({isActive}) => isActive ? 'text-propady-mint font-medium' : 'text-white/70 hover:text-white transition-colors'}
+              >
                 Marketplace
-              </Link>
-              <Link to="/projects" className="text-white hover:text-propady-mint p-2 rounded-md hover:bg-white/5 transition-colors">
-                Projects
-              </Link>
-              <Link to="/manage" className="text-white hover:text-propady-mint p-2 rounded-md hover:bg-white/5 transition-colors">
-                Manage Prop
-              </Link>
-            </div>
-            
-            {user ? (
-              <Button 
-                variant="outline" 
-                className="w-full border-white/20 text-white hover:bg-white/10"
-                onClick={signOut}
+              </NavLink>
+              <NavLink 
+                to="/ai-assistant" 
+                className={({isActive}) => isActive ? 'text-propady-mint font-medium' : 'text-white/70 hover:text-white transition-colors'}
               >
-                <LogOut className="mr-2 h-4 w-4" />
-                Log out
-              </Button>
+                AI Assistant
+              </NavLink>
+              {isLoggedIn && (
+                <NavLink 
+                  to="/manage" 
+                  className={({isActive}) => isActive ? 'text-propady-mint font-medium' : 'text-white/70 hover:text-white transition-colors'}
+                >
+                  Dashboard
+                </NavLink>
+              )}
+            </nav>
+          </div>
+          
+          <div className="flex items-center space-x-4">
+            {isLoggedIn ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`} alt={user.email} />
+                      <AvatarFallback className="bg-propady-purple text-white text-sm">
+                        {user.email?.substring(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">{user.email}</p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        {user.id.substring(0, 8)}...
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => window.location.href = '/profile'}>
+                    Profile
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => window.location.href = '/manage'}>
+                    Dashboard
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={signOut}>
+                    Log out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
-              <Button 
-                variant="default" 
-                className="w-full bg-propady-purple hover:bg-propady-purple-light text-white"
-                onClick={() => navigate('/auth')}
-              >
-                Sign up
-              </Button>
+              <>
+                <Button variant="outline" className="hidden md:inline-flex border-white/20 text-white hover:bg-white/10" onClick={openLoginModal}>
+                  Log In
+                </Button>
+                <Button className="hidden md:inline-flex bg-propady-purple hover:bg-propady-purple-light text-white" onClick={openSignupModal}>
+                  Sign Up
+                </Button>
+              </>
             )}
+
+            <Sheet>
+              <SheetTrigger className="md:hidden">
+                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                  <AlignJustify className="h-6 w-6 text-white" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="bg-background border-l border-white/10 text-white">
+                <SheetHeader className="space-y-2.5">
+                  <SheetTitle>Menu</SheetTitle>
+                  <SheetDescription>
+                    Explore Propady
+                  </SheetDescription>
+                </SheetHeader>
+                <div className="grid gap-4 py-4">
+                  <Button variant="ghost" className="justify-start" onClick={() => window.location.href = '/marketplace'}>
+                    Marketplace
+                  </Button>
+                  <Button variant="ghost" className="justify-start" onClick={() => window.location.href = '/ai-assistant'}>
+                    AI Assistant
+                  </Button>
+                  {isLoggedIn ? (
+                    <>
+                      <Button variant="ghost" className="justify-start" onClick={() => window.location.href = '/profile'}>
+                        Profile
+                      </Button>
+                      <Button variant="ghost" className="justify-start" onClick={() => window.location.href = '/manage'}>
+                        Dashboard
+                      </Button>
+                      <Button variant="ghost" className="justify-start" onClick={signOut}>
+                        Log out
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button variant="ghost" className="justify-start" onClick={openLoginModal}>
+                        Log In
+                      </Button>
+                      <Button variant="ghost" className="justify-start" onClick={openSignupModal}>
+                        Sign Up
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
-      )}
+      </div>
     </header>
   );
 };
