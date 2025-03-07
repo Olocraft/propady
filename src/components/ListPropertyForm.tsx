@@ -129,11 +129,13 @@ const ListPropertyForm = () => {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button 
-          className="bg-gradient-to-r from-propady-purple to-propady-mint text-white hover:opacity-90 transition-opacity"
-        >
-          <Plus className="mr-2 h-4 w-4" /> List New Property
-        </Button>
+        <div>
+          <Button 
+            className="bg-gradient-to-r from-propady-purple to-propady-mint text-white hover:opacity-90 transition-opacity"
+          >
+            <Plus className="mr-2 h-4 w-4" /> List New Property
+          </Button>
+        </div>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[550px] bg-background border border-white/10">
         <DialogHeader>

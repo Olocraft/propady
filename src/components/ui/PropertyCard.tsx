@@ -5,6 +5,7 @@ import { MapPin } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";
 import { cn } from '@/lib/utils';
+import InvestmentModal from '@/components/marketplace/InvestmentModal';
 
 interface PropertyCardProps {
   id: string;
@@ -129,12 +130,24 @@ const PropertyCard = ({
 
       {variant === 'default' && (
         <div className="p-4 pt-0 grid grid-cols-2 gap-2">
-          <Button variant="outline" className="w-full bg-white/5 hover:bg-white/10 text-white border-white/20">
-            Inspect
-          </Button>
-          <Button variant="default" className="w-full bg-black text-white hover:bg-black/80">
-            Bid
-          </Button>
+          <Link to={`/property/${id}`}>
+            <Button variant="outline" className="w-full bg-white/5 hover:bg-white/10 text-white border-white/20">
+              Inspect
+            </Button>
+          </Link>
+          <InvestmentModal
+            propertyId={id}
+            title={title}
+            price={price}
+            image={image}
+            location={location}
+            roi={roi}
+            annualReturn={annualReturn}
+          >
+            <Button variant="default" className="w-full bg-black text-white hover:bg-black/80">
+              Invest
+            </Button>
+          </InvestmentModal>
         </div>
       )}
     </motion.div>

@@ -6,12 +6,16 @@ import PropertyDetails from '@/components/PropertyDetails';
 import CryptoPayment from '@/components/payment/CryptoPayment';
 import { fetchPropertyById, mapPropertyToDisplay, Property } from '@/services/propertyService';
 import { toast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
 
 const PropertyPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [property, setProperty] = useState<Property | null>(null);
   const [loading, setLoading] = useState(true);
+  const [purchased, setPurchased] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
     // Scroll to top when component mounts
@@ -60,6 +64,14 @@ const PropertyPage = () => {
     navigate('/marketplace');
   };
 
+  const handlePaymentSuccess = () => {
+    setPurchased(true);
+    toast({
+      title: "Property purchased!",
+      description: "Your investment has been recorded successfully",
+    });
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
@@ -94,6 +106,9 @@ const PropertyPage = () => {
     "More..."
   ];
 
+  // Check if the user is the owner of this property
+  const isOwner = user && property.owner_id === user.id;
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -114,10 +129,28 @@ const PropertyPage = () => {
           features={features}
           onBack={handleBack}
           actionButton={
-            <CryptoPayment 
-              amount={property.price} 
-              propertyId={property.id}
-            />
+            purchased ? (
+              <div className="bg-propady-mint/20 text-propady-mint p-4 rounded-lg text-center">
+                <p className="font-medium">Property Successfully Purchased!</p>
+                <p className="text-sm mt-2">View in your portfolio</p>
+              </div>
+            ) : isOwner ? (
+              <div className="bg-propady-purple/20 text-propady-purple p-4 rounded-lg text-center">
+                <p className="font-medium">You own this property</p>
+                <Button 
+                  className="mt-2 bg-propady-purple hover:bg-propady-purple-light"
+                  onClick={() => navigate('/manage')}
+                >
+                  Manage Property
+                </Button>
+              </div>
+            ) : (
+              <CryptoPayment 
+                amount={property.price} 
+                propertyId={property.id}
+                onSuccess={handlePaymentSuccess}
+              />
+            )
           }
         />
       </div>

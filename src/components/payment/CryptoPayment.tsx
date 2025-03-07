@@ -13,6 +13,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
+import { useAuth } from '@/contexts/AuthContext';
+import { recordTransaction, verifyBlockchainTransaction } from '@/services/transactionService';
 
 // Supported cryptocurrency types
 const CRYPTOCURRENCIES = [
@@ -38,6 +40,8 @@ const CryptoPayment = ({
   const [selectedCrypto, setSelectedCrypto] = useState(CRYPTOCURRENCIES[0]);
   const [paymentStep, setPaymentStep] = useState<'select' | 'pay' | 'confirm'>('select');
   const [copied, setCopied] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const { user } = useAuth();
   
   // Mock wallet address - in production, this would be generated per transaction
   const walletAddress = '0x3Dc6aA12dEc4136d5f48C3Ec582Cf77793deCf85';
@@ -71,22 +75,81 @@ const CryptoPayment = ({
     setPaymentStep('pay');
   };
   
-  const mockConfirmPayment = () => {
-    // In production, we'd validate the transaction on the blockchain
-    setPaymentStep('confirm');
-    setTimeout(() => {
-      if (onSuccess) onSuccess();
-      setOpen(false);
+  const mockConfirmPayment = async () => {
+    if (!user) {
       toast({
-        title: "Payment successful",
-        description: `You've successfully paid ${getCryptoAmount()} ${selectedCrypto.symbol}`,
+        title: "Authentication required",
+        description: "Please sign in to complete this transaction",
+        variant: "destructive"
       });
-    }, 1500);
+      return;
+    }
+    
+    if (!propertyId) {
+      toast({
+        title: "Invalid property",
+        description: "Could not identify the property for this transaction",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setIsProcessing(true);
+    
+    try {
+      // In a real app, this would be the transaction hash from the blockchain
+      const mockTxHash = `0x${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`;
+      
+      // Verify the transaction on the blockchain
+      const verified = await verifyBlockchainTransaction(
+        mockTxHash, 
+        parseFloat(getCryptoAmount()), 
+        selectedCrypto.symbol
+      );
+      
+      if (verified) {
+        // Record the transaction in our database
+        const success = await recordTransaction({
+          propertyId,
+          amount,
+          cryptoSymbol: selectedCrypto.symbol,
+          cryptoAmount: getCryptoAmount(),
+          buyerId: user.id
+        });
+        
+        if (success) {
+          setPaymentStep('confirm');
+          
+          if (onSuccess) {
+            setTimeout(() => {
+              onSuccess();
+            }, 1000);
+          }
+          
+          toast({
+            title: "Payment successful",
+            description: `You've successfully paid ${getCryptoAmount()} ${selectedCrypto.symbol}`,
+          });
+        }
+      } else {
+        throw new Error("Transaction verification failed");
+      }
+    } catch (error) {
+      console.error("Payment error:", error);
+      toast({
+        title: "Payment failed",
+        description: "There was an error processing your payment",
+        variant: "destructive"
+      });
+    } finally {
+      setIsProcessing(false);
+    }
   };
   
   const resetPaymentFlow = () => {
     setPaymentStep('select');
     setSelectedCrypto(CRYPTOCURRENCIES[0]);
+    setIsProcessing(false);
   };
   
   return (
@@ -183,8 +246,19 @@ const CryptoPayment = ({
             
             <div className="text-center">
               <p className="text-sm text-white/70 mb-4">After sending, click below to confirm your payment</p>
-              <Button onClick={mockConfirmPayment} className="bg-propady-mint text-black hover:bg-propady-mint/90 w-full">
-                I've Sent {getCryptoAmount()} {selectedCrypto.symbol}
+              <Button 
+                onClick={mockConfirmPayment} 
+                className="bg-propady-mint text-black hover:bg-propady-mint/90 w-full"
+                disabled={isProcessing}
+              >
+                {isProcessing ? (
+                  <span className="flex items-center">
+                    <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin mr-2"></div>
+                    Verifying...
+                  </span>
+                ) : (
+                  `I've Sent ${getCryptoAmount()} ${selectedCrypto.symbol}`
+                )}
               </Button>
             </div>
           </div>
@@ -220,6 +294,7 @@ const CryptoPayment = ({
               variant="ghost" 
               onClick={() => paymentStep === 'pay' ? setPaymentStep('select') : setOpen(false)}
               className="text-white/70 hover:text-white hover:bg-white/10"
+              disabled={isProcessing}
             >
               {paymentStep === 'pay' ? 'Back' : 'Cancel'}
             </Button>

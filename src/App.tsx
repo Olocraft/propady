@@ -14,6 +14,7 @@ import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import AiAssistant from "./pages/AiAssistant";
+import Investments from "./pages/Investments";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,7 @@ const App = () => (
             <Route element={<PrivateRoute />}>
               <Route path="/manage" element={<Dashboard />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path="/investments" element={<Investments />} />
             </Route>
             
             <Route path="*" element={<NotFound />} />

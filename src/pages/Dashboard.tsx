@@ -1,42 +1,63 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Navbar from '@/components/layout/Navbar';
 import PropertyCard from '@/components/ui/PropertyCard';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { Plus, Home, Settings } from 'lucide-react';
 import ListPropertyForm from '@/components/ListPropertyForm';
-
-// Mock portfolio properties
-const portfolioProperties = [
-  {
-    id: "portfolio1",
-    title: "Incomplete Tower",
-    price: "$130k",
-    image: "/lovable-uploads/6e09ce2d-feb2-4a17-b898-f69caf6eab4e.png",
-    location: "Lekki, Lagos",
-    agency: "",
-    verified: false,
-    roi: "12.08%",
-    annualReturn: "12.08%",
-    supportedChains: ["ethereum", "solana", "polygon", "binance"]
-  },
-  {
-    id: "portfolio2",
-    title: "Incomplete Tower",
-    price: "$130k",
-    image: "/lovable-uploads/6e09ce2d-feb2-4a17-b898-f69caf6eab4e.png",
-    location: "Lekki, Lagos",
-    agency: "",
-    verified: false,
-    roi: "12.08%",
-    annualReturn: "12.08%",
-    supportedChains: ["ethereum", "solana", "polygon", "binance"]
-  },
-];
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { mapPropertyToDisplay } from '@/services/propertyService';
+import { Property } from '@/services/propertyService';
 
 const Dashboard = () => {
-  const [hasProperties, setHasProperties] = useState(true);
+  const [portfolioProperties, setPortfolioProperties] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasProperties, setHasProperties] = useState(false);
+  const { toast } = useToast();
+  const { user } = useAuth();
+
+  useEffect(() => {
+    // Fetch user's properties from Supabase
+    const fetchUserProperties = async () => {
+      if (!user) return;
+
+      setIsLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('properties')
+          .select('*')
+          .eq('owner_id', user.id)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+          const formattedProperties = data.map((property: Property) => 
+            mapPropertyToDisplay(property)
+          );
+          setPortfolioProperties(formattedProperties);
+          setHasProperties(true);
+        } else {
+          setPortfolioProperties([]);
+          setHasProperties(false);
+        }
+      } catch (error) {
+        console.error('Error fetching properties:', error);
+        toast({
+          title: "Failed to load properties",
+          description: "There was an error loading your properties",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUserProperties();
+  }, [user, toast]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -84,11 +105,15 @@ const Dashboard = () => {
                 </div>
               </div>
               
-              {hasProperties ? (
+              {isLoading ? (
+                <div className="flex justify-center py-20">
+                  <div className="w-10 h-10 border-4 border-propady-purple border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              ) : hasProperties ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {portfolioProperties.map((property, index) => (
                     <PropertyCard
-                      key={index}
+                      key={property.id}
                       {...property}
                       className="animate-enter"
                     />
