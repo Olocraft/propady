@@ -1,8 +1,8 @@
-
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/layout/Navbar';
 import PropertyCard from '@/components/ui/PropertyCard';
+import CryptoSection from '@/components/marketplace/CryptoSection';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { Filter, Grid, List } from 'lucide-react';
@@ -156,6 +156,8 @@ const Marketplace = () => {
             )}
           </div>
         )}
+        
+        <CryptoSection />
         
         <div className="mb-8 flex items-center gap-4">
           <h2 className="text-2xl font-bold text-white">Trending Real Estate Agencies</h2>

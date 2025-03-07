@@ -2,6 +2,7 @@
 import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { Button } from "@/components/ui/button";
+import CryptoPayment from '@/components/payment/CryptoPayment';
 
 const blockchains = [
   {
@@ -41,9 +42,21 @@ const BlockchainCard = ({ blockchain, index }: { blockchain: typeof blockchains[
         <h3 className="text-xl font-semibold text-white">{blockchain.name}</h3>
       </div>
       <p className="text-white/70 mb-6 text-center flex-grow">{blockchain.description}</p>
-      <Button variant="default" className="w-full bg-propady-purple hover:bg-propady-purple-light text-white">
+      <Button 
+        variant="default" 
+        className="w-full bg-propady-purple hover:bg-propady-purple-light text-white"
+        onClick={() => document.getElementById(`crypto-payment-${index}`)?.click()}
+      >
         {blockchain.buttonText}
       </Button>
+      <div className="hidden">
+        <CryptoPayment 
+          amount={1000} 
+          variant="button" 
+          // @ts-ignore - This is fine for our hidden trigger
+          id={`crypto-payment-${index}`}
+        />
+      </div>
     </motion.div>
   );
 };
@@ -65,6 +78,9 @@ const BlockchainSection = () => {
           className="mb-12 text-center"
         >
           <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">Powered by leading blockchains</h2>
+          <p className="text-white/70 mb-8 max-w-2xl mx-auto">
+            Use your preferred cryptocurrency to securely and transparently purchase or invest in properties on our platform.
+          </p>
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

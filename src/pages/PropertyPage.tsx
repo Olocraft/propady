@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/layout/Navbar';
 import PropertyDetails from '@/components/PropertyDetails';
+import CryptoPayment from '@/components/payment/CryptoPayment';
 import { fetchPropertyById, mapPropertyToDisplay, Property } from '@/services/propertyService';
 import { toast } from '@/hooks/use-toast';
 
@@ -112,6 +113,12 @@ const PropertyPage = () => {
           verified={property.blockchain_verified || false}
           features={features}
           onBack={handleBack}
+          actionButton={
+            <CryptoPayment 
+              amount={property.price} 
+              propertyId={property.id}
+            />
+          }
         />
       </div>
     </div>
