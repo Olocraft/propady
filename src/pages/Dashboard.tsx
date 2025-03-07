@@ -5,6 +5,7 @@ import PropertyCard from '@/components/ui/PropertyCard';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { Plus, Home, Settings } from 'lucide-react';
+import ListPropertyForm from '@/components/ListPropertyForm';
 
 // Mock portfolio properties
 const portfolioProperties = [
@@ -69,6 +70,7 @@ const Dashboard = () => {
                 </div>
                 
                 <div className="flex gap-2 mt-4 md:mt-0">
+                  <ListPropertyForm />
                   <Button
                     className="bg-gradient-to-r from-propady-purple to-propady-purple-light text-white hover:opacity-90 transition-opacity"
                   >
