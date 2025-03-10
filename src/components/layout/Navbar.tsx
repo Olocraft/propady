@@ -11,6 +11,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import NavbarLinks from './NavbarLinks';
+import { motion } from 'framer-motion';
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -25,7 +26,10 @@ const Navbar = () => {
   }, []);
 
   return (
-    <header
+    <motion.header
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      transition={{ duration: 0.5 }}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled ? 'bg-black/80 backdrop-blur-md' : 'bg-transparent'
       }`}
@@ -62,7 +66,7 @@ const Navbar = () => {
           </Sheet>
         </div>
       </div>
-    </header>
+    </motion.header>
   );
 };
 

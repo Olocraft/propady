@@ -1,110 +1,102 @@
 
-import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
-import { Building, LineChart, User, Home, LogOut, Flame } from 'lucide-react';
-import { 
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
-  DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from '@/components/ui/button';
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Building, Home, LogOut, Package, Search, User, MessageCircle, TrendingUp, Users } from 'lucide-react';
+import { useMediaQuery } from '@/hooks/use-mobile';
 
-const NavbarLinks: React.FC = () => {
-  const location = useLocation();
+const links = [
+  { name: 'Home', href: '/', icon: <Home className="h-4 w-4 mr-2" /> },
+  { name: 'Marketplace', href: '/marketplace', icon: <Search className="h-4 w-4 mr-2" /> },
+  { name: 'Crowdfunding', href: '/crowdfunding', icon: <Users className="h-4 w-4 mr-2" /> },
+  { name: 'AI Assistant', href: '/ai-assistant', icon: <MessageCircle className="h-4 w-4 mr-2" /> },
+];
+
+const authenticatedLinks = [
+  { name: 'My Properties', href: '/manage', icon: <Building className="h-4 w-4 mr-2" /> },
+  { name: 'My Investments', href: '/investments', icon: <TrendingUp className="h-4 w-4 mr-2" /> },
+  { name: 'Profile', href: '/profile', icon: <User className="h-4 w-4 mr-2" /> },
+];
+
+const NavbarLinks = () => {
   const { user, signOut } = useAuth();
+  const location = useLocation();
+  const isMobile = useMediaQuery('(max-width: 768px)');
+  
+  const handleSignOut = async () => {
+    await signOut();
+  };
 
-  const navLinks = [
-    { label: 'Home', path: '/' },
-    { label: 'Marketplace', path: '/marketplace' },
-    { label: 'AI Assistant', path: '/ai-assistant' }
-  ];
+  const isActive = (href: string) => location.pathname === href;
 
   return (
     <>
-      {/* Primary Nav Links */}
-      <div className="hidden md:flex space-x-1">
-        {navLinks.map((link) => (
-          <Link
-            key={link.path}
-            to={link.path}
-            className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-              location.pathname === link.path
-                ? 'text-white bg-black/20'
-                : 'text-white/70 hover:text-white hover:bg-black/10'
-            }`}
-          >
-            {link.label}
+      <div className={isMobile ? "flex flex-col space-y-2" : "flex items-center space-x-4"}>
+        {links.map((link) => (
+          <Link key={link.name} to={link.href}>
+            <Button
+              variant={isActive(link.href) ? "default" : "ghost"}
+              className={
+                isActive(link.href)
+                  ? "bg-propady-purple text-white hover:bg-propady-purple-light"
+                  : "text-white hover:bg-white/10"
+              }
+              size={isMobile ? "default" : "sm"}
+            >
+              {link.icon}
+              {link.name}
+            </Button>
           </Link>
         ))}
-      </div>
 
-      {/* Auth Buttons / User Menu */}
-      <div className="flex items-center space-x-2">
         {user ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-9 w-9 rounded-full bg-black/20">
-                <Avatar className="h-9 w-9">
-                  <AvatarFallback className="bg-black/20 text-white text-sm">
-                    {user.email?.substring(0, 2).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
+              <Button
+                variant="ghost"
+                className="text-white hover:bg-white/10"
+                size={isMobile ? "default" : "sm"}
+              >
+                <Package className="h-4 w-4 mr-2" />
+                My Account
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 bg-black/80 backdrop-blur-md border-white/10 text-white">
-              <div className="flex items-center justify-start gap-2 p-2">
-                <div className="flex flex-col space-y-0.5">
-                  <p className="text-sm font-medium">{user.email}</p>
-                </div>
-              </div>
+            <DropdownMenuContent align="end" className="w-56 bg-background border border-white/10">
+              {authenticatedLinks.map((link) => (
+                <DropdownMenuItem key={link.name} asChild className="text-white focus:bg-white/10 focus:text-white cursor-pointer">
+                  <Link to={link.href} className="flex items-center w-full">
+                    {link.icon}
+                    {link.name}
+                  </Link>
+                </DropdownMenuItem>
+              ))}
               <DropdownMenuSeparator className="bg-white/10" />
-              <DropdownMenuItem asChild className="cursor-pointer hover:bg-white/10">
-                <Link to="/profile" className="flex items-center">
-                  <User className="mr-2 h-4 w-4" />
-                  <span>Profile</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild className="cursor-pointer hover:bg-white/10">
-                <Link to="/manage" className="flex items-center">
-                  <Building className="mr-2 h-4 w-4" />
-                  <span>My Properties</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild className="cursor-pointer hover:bg-white/10">
-                <Link to="/investments" className="flex items-center">
-                  <LineChart className="mr-2 h-4 w-4" />
-                  <span>Investments</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild className="cursor-pointer hover:bg-white/10">
-                <Link to="/ai-assistant" className="flex items-center">
-                  <Flame className="mr-2 h-4 w-4" />
-                  <span>AI Assistant</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator className="bg-white/10" />
-              <DropdownMenuItem 
-                onClick={signOut}
-                className="cursor-pointer text-red-300 hover:bg-red-900/20 hover:text-red-300"
+              <DropdownMenuItem
+                className="text-red-500 focus:bg-red-500/10 focus:text-red-500 cursor-pointer"
+                onClick={handleSignOut}
               >
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Log out</span>
+                <LogOut className="h-4 w-4 mr-2" />
+                Sign Out
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
-          <>
-            <Link to="/auth?mode=signin">
-              <Button variant="ghost" className="text-white hover:bg-white/10">Sign In</Button>
-            </Link>
-            <Link to="/auth?mode=signup">
-              <Button className="bg-propady-mint text-black hover:bg-propady-mint/90">Sign Up</Button>
-            </Link>
-          </>
+          <Link to="/auth">
+            <Button
+              variant="default"
+              className="bg-gradient-to-r from-propady-purple to-propady-mint text-white hover:opacity-90 transition-opacity"
+              size={isMobile ? "default" : "sm"}
+            >
+              Sign In
+            </Button>
+          </Link>
         )}
       </div>
     </>

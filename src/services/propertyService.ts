@@ -29,6 +29,10 @@ export interface PropertyDisplay {
   roi: string;
   annualReturn: string;
   supportedChains?: string[];
+  propertyType?: string;
+  bedrooms?: number;
+  bathrooms?: number;
+  area?: number;
 }
 
 export const fetchAllProperties = async (): Promise<Property[]> => {
@@ -78,6 +82,30 @@ export const fetchPropertyById = async (id: string): Promise<Property | null> =>
   }
 };
 
+export const fetchUserProperties = async (userId: string): Promise<Property[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('properties')
+      .select('*')
+      .eq('owner_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      throw error;
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching user properties:', error);
+    toast({
+      title: "Error fetching your properties",
+      description: "There was an error loading your properties. Please try again.",
+      variant: "destructive"
+    });
+    return [];
+  }
+};
+
 export const formatPrice = (price: number): string => {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -99,6 +127,12 @@ export const mapPropertyToDisplay = (property: Property): PropertyDisplay => {
   if (property.price > 30000) supportedChains.push('polygon');
   if (property.price > 20000) supportedChains.push('binance');
 
+  // Determine property type based on features
+  const propertyType = property.bedrooms ? 
+    'Residential' : 
+    property.area && property.area > 5000 ? 
+    'Commercial' : 'Land';
+
   return {
     id: property.id,
     title: property.title,
@@ -111,6 +145,10 @@ export const mapPropertyToDisplay = (property: Property): PropertyDisplay => {
     verified: property.blockchain_verified || false,
     roi,
     annualReturn,
-    supportedChains
+    supportedChains,
+    propertyType,
+    bedrooms: property.bedrooms,
+    bathrooms: property.bathrooms,
+    area: property.area
   };
 };
