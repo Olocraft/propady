@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/layout/Navbar';
@@ -6,7 +7,7 @@ import CryptoSection from '@/components/marketplace/CryptoSection';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { Filter, Grid, List, Search, X } from 'lucide-react';
-import { fetchAllProperties, PropertyDisplay } from '@/services/propertyService';
+import { fetchAllProperties, PropertyDisplay, mapPropertyToDisplay } from '@/services/propertyService';
 import { searchProperties } from '@/services/searchService';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -91,8 +92,10 @@ const Marketplace = () => {
       setLoading(true);
       try {
         const propertyData = await fetchAllProperties();
-        setProperties(propertyData);
-        setFilteredProperties(propertyData);
+        // Map the raw Property objects to PropertyDisplay objects
+        const displayProperties = propertyData.map(mapPropertyToDisplay);
+        setProperties(displayProperties);
+        setFilteredProperties(displayProperties);
       } catch (error) {
         console.error("Error fetching properties:", error);
         toast({
