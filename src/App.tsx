@@ -15,7 +15,6 @@ import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import AiAssistant from "./pages/AiAssistant";
 import Investments from "./pages/Investments";
-import Crowdfunding from "./pages/Crowdfunding";
 
 const queryClient = new QueryClient();
 
@@ -32,7 +31,6 @@ const App = () => (
             <Route path="/property/:id" element={<PropertyPage />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/ai-assistant" element={<AiAssistant />} />
-            <Route path="/crowdfunding" element={<Crowdfunding />} />
             
             {/* Protected Routes */}
             <Route element={<PrivateRoute />}>

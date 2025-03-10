@@ -1,17 +1,10 @@
 
 import React from 'react';
-import { ArrowLeft, Check, Share2 } from 'lucide-react';
+import { ArrowLeft, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from "@/components/ui/badge";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { 
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { cn } from '@/lib/utils';
-import { toast } from '@/hooks/use-toast';
 
 export interface PropertyDetailsProps {
   id: string;
@@ -40,43 +33,17 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({
   onBack,
   actionButton
 }) => {
-  const handleShare = () => {
-    navigator.clipboard.writeText(window.location.href);
-    toast({
-      title: "Link copied!",
-      description: "Property link has been copied to clipboard",
-    });
-  };
-
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center mb-6">
         <Button 
           onClick={onBack} 
           variant="ghost" 
-          className="text-white hover:bg-white/10 p-0 h-auto"
+          className="text-white hover:bg-white/10 p-0 mr-4 h-auto"
         >
           <ArrowLeft className="h-5 w-5 mr-2" />
           Back to marketplace
         </Button>
-        
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button 
-                variant="outline" 
-                size="icon" 
-                className="border-white/10 text-white hover:bg-white/10"
-                onClick={handleShare}
-              >
-                <Share2 className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Share property</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
