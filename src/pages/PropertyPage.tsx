@@ -1,13 +1,14 @@
-
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/layout/Navbar';
 import PropertyDetails from '@/components/PropertyDetails';
 import CryptoPayment from '@/components/payment/CryptoPayment';
+import CashPayment from '@/components/payment/CashPayment';
 import { fetchPropertyById, mapPropertyToDisplay, Property } from '@/services/propertyService';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 
 const PropertyPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -18,7 +19,6 @@ const PropertyPage = () => {
   const { user } = useAuth();
 
   useEffect(() => {
-    // Scroll to top when component mounts
     window.scrollTo(0, 0);
 
     const getProperty = async () => {
@@ -94,10 +94,8 @@ const PropertyPage = () => {
     );
   }
 
-  // Format property data for the PropertyDetails component
   const displayProperty = mapPropertyToDisplay(property);
   
-  // Mock features based on property data
   const features = [
     property.bedrooms ? `${property.bedrooms} bedrooms` : "Spacious layout",
     property.bathrooms ? `${property.bathrooms} bathrooms` : "Modern bathrooms",
@@ -106,8 +104,36 @@ const PropertyPage = () => {
     "More..."
   ];
 
-  // Check if the user is the owner of this property
   const isOwner = user && property.owner_id === user.id;
+
+  const paymentOptions = (
+    <div className="space-y-4">
+      <Tabs defaultValue="crypto" className="w-full">
+        <TabsList className="grid grid-cols-2 mb-4 bg-white/5">
+          <TabsTrigger value="crypto" className="data-[state=active]:bg-propady-mint data-[state=active]:text-black">
+            Crypto
+          </TabsTrigger>
+          <TabsTrigger value="cash" className="data-[state=active]:bg-white data-[state=active]:text-black">
+            Cash
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="crypto">
+          <CryptoPayment 
+            amount={property.price} 
+            propertyId={property.id}
+            onSuccess={handlePaymentSuccess}
+          />
+        </TabsContent>
+        <TabsContent value="cash">
+          <CashPayment 
+            amount={property.price} 
+            propertyId={property.id}
+            onSuccess={handlePaymentSuccess}
+          />
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-background">
@@ -144,13 +170,7 @@ const PropertyPage = () => {
                   Manage Property
                 </Button>
               </div>
-            ) : (
-              <CryptoPayment 
-                amount={property.price} 
-                propertyId={property.id}
-                onSuccess={handlePaymentSuccess}
-              />
-            )
+            ) : paymentOptions
           }
         />
       </div>

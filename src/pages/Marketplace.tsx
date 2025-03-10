@@ -5,10 +5,16 @@ import PropertyCard from '@/components/ui/PropertyCard';
 import CryptoSection from '@/components/marketplace/CryptoSection';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
-import { Filter, Grid, List } from 'lucide-react';
-import { fetchAllProperties, mapPropertyToDisplay, PropertyDisplay } from '@/services/propertyService';
+import { Filter, Grid, List, Search, X } from 'lucide-react';
+import { fetchAllProperties, PropertyDisplay } from '@/services/propertyService';
+import { searchProperties } from '@/services/searchService';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Slider } from '@/components/ui/slider';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { toast } from '@/hooks/use-toast';
 
-// Mock agency data
 const agencies = [
   {
     id: 1,
@@ -47,7 +53,6 @@ const agencies = [
   }
 ];
 
-// Mock categories
 const categories = [
   {
     id: "airplane",
@@ -71,21 +76,30 @@ const Marketplace = () => {
   const [activeTab, setActiveTab] = useState('land');
   const [viewMode, setViewMode] = useState('trending');
   const [properties, setProperties] = useState<PropertyDisplay[]>([]);
+  const [filteredProperties, setFilteredProperties] = useState<PropertyDisplay[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterDialogOpen, setFilterDialogOpen] = useState(false);
+  const [priceRange, setPriceRange] = useState([0, 1000000]);
+  const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
+  const [filtersApplied, setFiltersApplied] = useState(false);
 
   useEffect(() => {
-    // Scroll to top when component mounts
     window.scrollTo(0, 0);
     
-    // Fetch properties from Supabase
     const getProperties = async () => {
       setLoading(true);
       try {
         const propertyData = await fetchAllProperties();
-        const displayProperties = propertyData.map(mapPropertyToDisplay);
-        setProperties(displayProperties);
+        setProperties(propertyData);
+        setFilteredProperties(propertyData);
       } catch (error) {
         console.error("Error fetching properties:", error);
+        toast({
+          title: "Error loading properties",
+          description: "There was a problem fetching the properties. Please try again.",
+          variant: "destructive"
+        });
       } finally {
         setLoading(false);
       }
@@ -93,6 +107,55 @@ const Marketplace = () => {
     
     getProperties();
   }, []);
+
+  const handleSearch = async () => {
+    if (!searchTerm && !filtersApplied) {
+      setFilteredProperties(properties);
+      return;
+    }
+
+    setLoading(true);
+    
+    try {
+      const results = await searchProperties({
+        searchTerm: searchTerm,
+        minPrice: filtersApplied ? priceRange[0] : undefined,
+        maxPrice: filtersApplied ? priceRange[1] : undefined,
+        location: filtersApplied && selectedLocations.length > 0 ? selectedLocations.join(',') : undefined
+      });
+      
+      setFilteredProperties(results);
+    } catch (error) {
+      console.error("Search error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab !== 'land') {
+      const filtered = properties.slice(0, properties.length > 3 ? 3 : properties.length);
+      setFilteredProperties(filtered);
+    } else {
+      setFilteredProperties(properties);
+    }
+  }, [activeTab, properties]);
+
+  const applyFilters = () => {
+    setFiltersApplied(true);
+    setFilterDialogOpen(false);
+    handleSearch();
+  };
+
+  const clearFilters = () => {
+    setPriceRange([0, 1000000]);
+    setSelectedLocations([]);
+    setFiltersApplied(false);
+    setFilterDialogOpen(false);
+    setFilteredProperties(properties);
+  };
+
+  const locations = [...new Set(properties.map(p => p.location))];
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -125,13 +188,125 @@ const Marketplace = () => {
               {tab}
             </Button>
           ))}
-          
-          <div className="ml-auto">
-            <Button variant="link" className="text-white">
-              See all properties
-            </Button>
-          </div>
         </div>
+        
+        <div className="mb-8 flex flex-wrap items-center gap-4">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/50" />
+            <Input 
+              type="text"
+              placeholder="Search properties..."
+              className="pl-10 bg-white/5 border-white/10 text-white"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+            />
+            {searchTerm && (
+              <button 
+                className="absolute right-3 top-1/2 -translate-y-1/2"
+                onClick={() => {
+                  setSearchTerm('');
+                  if (!filtersApplied) {
+                    setFilteredProperties(properties);
+                  }
+                }}
+              >
+                <X className="h-4 w-4 text-white/50" />
+              </button>
+            )}
+          </div>
+          
+          <Button 
+            variant="outline" 
+            size="icon" 
+            className="border-white/10"
+            onClick={() => setFilterDialogOpen(true)}
+          >
+            <Filter className="h-4 w-4 text-white" />
+          </Button>
+          
+          <Button 
+            onClick={handleSearch}
+            className="bg-propady-mint text-black hover:bg-propady-mint/90"
+          >
+            Search
+          </Button>
+          
+          {filtersApplied && (
+            <Button 
+              variant="outline" 
+              className="border-white/10 text-white"
+              onClick={clearFilters}
+            >
+              Clear Filters
+            </Button>
+          )}
+        </div>
+        
+        <Dialog open={filterDialogOpen} onOpenChange={setFilterDialogOpen}>
+          <DialogContent className="bg-background border-white/10 text-white">
+            <DialogHeader>
+              <DialogTitle>Filter Properties</DialogTitle>
+            </DialogHeader>
+            
+            <div className="space-y-6 py-4">
+              <div className="space-y-4">
+                <h3 className="font-medium">Price Range</h3>
+                <div className="px-2">
+                  <Slider 
+                    value={priceRange} 
+                    min={0} 
+                    max={1000000} 
+                    step={10000}
+                    onValueChange={setPriceRange} 
+                  />
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span>${priceRange[0].toLocaleString()}</span>
+                  <span>${priceRange[1].toLocaleString()}</span>
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                <h3 className="font-medium">Locations</h3>
+                <div className="grid grid-cols-2 gap-2">
+                  {locations.map((location) => (
+                    <div key={location} className="flex items-center space-x-2">
+                      <Checkbox 
+                        id={`location-${location}`} 
+                        checked={selectedLocations.includes(location)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setSelectedLocations([...selectedLocations, location]);
+                          } else {
+                            setSelectedLocations(selectedLocations.filter(l => l !== location));
+                          }
+                        }}
+                      />
+                      <Label htmlFor={`location-${location}`} className="text-white">{location}</Label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex justify-between gap-2">
+              <Button 
+                variant="outline" 
+                className="flex-1 border-white/10" 
+                onClick={clearFilters}
+              >
+                Clear
+              </Button>
+              <Button 
+                className="flex-1 bg-propady-mint text-black hover:bg-propady-mint/90"
+                onClick={applyFilters}
+              >
+                Apply Filters
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
         
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
@@ -141,8 +316,8 @@ const Marketplace = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
-            {properties.length > 0 ? (
-              properties.map((property, index) => (
+            {filteredProperties.length > 0 ? (
+              filteredProperties.map((property, index) => (
                 <PropertyCard
                   key={property.id}
                   {...property}
@@ -151,7 +326,7 @@ const Marketplace = () => {
               ))
             ) : (
               <div className="col-span-3 text-center py-10">
-                <p className="text-white text-lg">No properties found. Check back later!</p>
+                <p className="text-white text-lg">No properties found. Try adjusting your search or filters.</p>
               </div>
             )}
           </div>
