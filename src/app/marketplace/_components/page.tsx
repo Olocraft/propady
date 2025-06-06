@@ -1,14 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import PropertyCard from "./_components/PropertyCard";
-import CryptoSection from "./_components/CryptoSection";
+import PropertyCard from "./PropertyCard";
+import CryptoSection from "./CryptoSection";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { Filter, Search, X } from "lucide-react";
 import {
-  fetchAllProperties,
   PropertyDisplay,
+  fetchAllProperties,
+  mapPropertyToDisplay,
 } from "@/lib/services/propertyService";
 import { searchProperties } from "@/lib/services/searchService";
 import { Input } from "@/components/ui/input";
@@ -24,10 +25,62 @@ import { Label } from "@/components/ui/label";
 import Img from "@/components/Img";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { mapPropertyToDisplay } from "@/lib/services/maps";
-import { agencies, categories } from "./_components/cards-and-constants/constants";
 
+const agencies = [
+  {
+    id: 1,
+    name: "Horizon Estate",
+    logo: "/lovable-uploads/cc3dd316-3700-4b84-9cbe-4af5b0a4ba28.png",
+    transactionsCount: "1,029 Props Transactions",
+    priceCeiling: "$20,000",
+  },
+  {
+    id: 2,
+    name: "Eastern Homes",
+    logo: "/lovable-uploads/cc3dd316-3700-4b84-9cbe-4af5b0a4ba28.png",
+    transactionsCount: "529 Props Transactions",
+    priceCeiling: "$10,000",
+  },
+  {
+    id: 3,
+    name: "Kingdom",
+    logo: "/lovable-uploads/cc3dd316-3700-4b84-9cbe-4af5b0a4ba28.png",
+    transactionsCount: "456 Props Transactions",
+    priceCeiling: "$10,000",
+  },
+  {
+    id: 4,
+    name: "Homez",
+    logo: "/lovable-uploads/cc3dd316-3700-4b84-9cbe-4af5b0a4ba28.png",
+    transactionsCount: "456 Props Transactions",
+    priceCeiling: "$10,000",
+  },
+  {
+    id: 5,
+    name: "Find Cribs",
+    logo: "/lovable-uploads/cc3dd316-3700-4b84-9cbe-4af5b0a4ba28.png",
+    transactionsCount: "456 Props Transactions",
+    priceCeiling: "$10,000",
+  },
+];
 
+const categories = [
+  {
+    id: "airplane",
+    name: "Airplane sales",
+    image: "/lovable-uploads/0ef9a1b3-5100-4a51-b446-be1f0172c4fd.png",
+  },
+  {
+    id: "farm",
+    name: "Farm Management",
+    image: "/lovable-uploads/6e09ce2d-feb2-4a17-b898-f69caf6eab4e.png",
+  },
+  {
+    id: "mortgage",
+    name: "Mortgage Management",
+    image: "/lovable-uploads/3eeac279-1354-4519-87b9-7561d83e730b.png",
+  },
+];
 
 const Marketplace = () => {
   const router = useRouter();
@@ -51,17 +104,16 @@ const Marketplace = () => {
       setLoading(true);
       try {
         const propertyData = await fetchAllProperties();
+        // Map the raw Property objects to PropertyDisplay objects
 
         if (!propertyData.success) {
-          toast.error(
-            "There was a problem fetching the properties. Please try again."
-          );
-          return
+          toast.error("Error getting properties");
         }
-        // Map the raw Property objects to PropertyDisplay objects
-        const displayProperties = propertyData.data?.map(mapPropertyToDisplay);
-        setProperties(displayProperties!);
-        setFilteredProperties(displayProperties!);
+
+        const { data } = propertyData;
+        const displayProperties = data!.map(mapPropertyToDisplay);
+        setProperties(displayProperties);
+        setFilteredProperties(displayProperties);
       } catch (error) {
         console.error("Error fetching properties:", error);
         toast.error(
@@ -94,12 +146,9 @@ const Marketplace = () => {
             : undefined,
       });
 
-      if (!results.success) {
-        toast.error("Error searching for properties");
-        return;
+      if (results.success) {
+        setFilteredProperties(results.data!);
       }
-
-      setFilteredProperties(results.data!);
     } catch (error) {
       console.error("Search error:", error);
     } finally {
