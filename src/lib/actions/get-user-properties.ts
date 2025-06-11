@@ -1,10 +1,12 @@
 "use server";
 
-import { supabase } from "@/db/db";
+import { getClient } from "@/db/db";
 import { Property } from "../services/propertyService";
 import { mapPropertyToDisplay } from "../services/maps";
 
 export const fetchCurrentUserProperties = async (userId: string) => {
+  const supabase = await getClient();
+
   try {
     const { data, error } = await supabase
       .from("properties")

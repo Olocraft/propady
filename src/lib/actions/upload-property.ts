@@ -1,12 +1,14 @@
 "use server";
 
-import { supabase } from "@/db/db";
+import { getClient } from "@/db/db";
 
 export async function uploadImage(
   propertyId: string,
   fileName: string,
   file: File
 ) {
+  const supabase = await getClient();
+
   const { error: uploadError } = await supabase.storage
     .from("properties")
     .upload(`${propertyId}/${fileName}`, file);
@@ -19,6 +21,8 @@ export async function uploadImage(
 }
 
 export async function getPublicUrl(propertyId: string, fileName: string) {
+  const supabase = await getClient();
+
   const { data: publicUrlData } = supabase.storage
     .from("properties")
     .getPublicUrl(`${propertyId}/${fileName}`);
@@ -34,6 +38,8 @@ export async function updatePropertyWithImgUrls(
   imageUrls: string[],
   propertyId: string
 ) {
+  const supabase = await getClient();
+
   return await supabase
     .from("properties")
     .update({ images: imageUrls })
@@ -51,6 +57,8 @@ export async function insertProperty(
   location: string,
   area?: string
 ) {
+  const supabase = await getClient();
+
   const { data, error } = await supabase
     .from("properties")
     .insert({

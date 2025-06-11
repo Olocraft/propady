@@ -15,11 +15,13 @@ import {
 import { motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
+import { validateFields } from "@/lib/utils";
 import { toast } from "sonner";
-import axios from "axios";
 
 export default function SigninForm() {
   const router = useRouter();
+  const { signIn } = useAuth();
 
   const [signInData, setSignInData] = useState({
     email: "",
@@ -43,15 +45,17 @@ export default function SigninForm() {
     e.preventDefault();
     setLoading(true);
 
+    const { isEmpty } = validateFields(signInData);
+
+    if (isEmpty) {
+      toast.error("All fields must be filled");
+      setLoading(false);
+      return;
+    }
+
     try {
-      const { data } = await axios.post<{ success: boolean; message: string }>(
-        "/api/auth/signin",
-        signInData
-      );
-      const response = data.success ? "success" : "error";
-      toast[response](data.message);
+      await signIn(signInData.email, signInData.password);
     } catch (error) {
-      toast.error("Internal error, try again");
       console.error("Sign in error:", error);
     }
     setLoading(false);

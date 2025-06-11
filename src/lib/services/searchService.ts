@@ -2,7 +2,7 @@
 
 import { mapPropertyToDisplay } from "./maps";
 import { Property } from "./propertyService";
-import { supabase } from "@/db/db";
+import { getClient } from "@/db/db";
 
 interface SearchFilters {
   minPrice?: number;
@@ -14,6 +14,8 @@ interface SearchFilters {
 
 export const searchProperties = async (filters: SearchFilters) => {
   try {
+    const supabase = await getClient();
+
     let query = supabase.from("properties").select("*");
 
     // Apply filters if provided

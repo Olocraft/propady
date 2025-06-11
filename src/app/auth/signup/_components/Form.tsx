@@ -16,11 +16,12 @@ import { motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import axios from "axios";
 import { validateFields } from "@/lib/utils";
+import { useAuth } from "@/context/AuthContext";
 
 export default function SignUpForm() {
   const router = useRouter();
+  const { signUp } = useAuth();
 
   const [signUpData, setSignUpData] = useState({
     email: "",
@@ -65,14 +66,8 @@ export default function SignUpForm() {
     }
 
     try {
-      const { data } = await axios.post<{ success: boolean; message: string }>(
-        "/api/auth/signin",
-        signUpData
-      );
-      const response = data.success ? "success" : "error";
-      toast[response](data.message);
+      await signUp(email, password, { fullName });
     } catch (error) {
-      toast.error("Internal error, try again");
       console.error("Sign in error:", error);
     }
     setLoading(false);

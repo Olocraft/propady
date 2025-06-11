@@ -1,6 +1,6 @@
 'use server'
 
-import { supabase } from "@/db/db";
+import { getClient } from "@/db/db";
 
 export interface Property {
   id: string;
@@ -37,6 +37,8 @@ export const fetchAllProperties = async (): Promise<{
   message?: unknown;
 }> => {
   try {
+        const supabase = await getClient();
+    
     const { data, error } = await supabase
       .from("properties")
       .select("*")
@@ -55,6 +57,8 @@ export const fetchAllProperties = async (): Promise<{
 
 export const fetchPropertyById = async (id: string) => {
   try {
+        const supabase = await getClient();
+
     const { data, error } = await supabase
       .from("properties")
       .select("*")

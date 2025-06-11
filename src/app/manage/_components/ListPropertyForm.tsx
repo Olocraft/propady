@@ -36,12 +36,14 @@ interface PreviewImage {
   preview: string;
 }
 
+type PropertyType = "Residential" | "Commercial" | "Land";
+
 type FormData = {
   title: string;
   price: string;
   location: string;
   description: string;
-  propertyType: string;
+  propertyType: PropertyType;
   bedrooms: string;
   bathrooms: string;
   area: string;
@@ -134,7 +136,7 @@ const ListPropertyForm = () => {
     });
   };
 
-  const setPropertyType = (value: string) => {
+  const setPropertyType = (value: PropertyType) => {
     setFormData((prev) => {
       return {
         ...prev,
@@ -142,7 +144,7 @@ const ListPropertyForm = () => {
       };
     });
   };
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 

@@ -1,6 +1,6 @@
 "use server";
 
-import { supabase } from "@/db/db";
+import { getClient } from "@/db/db";
 
 interface TransactionData {
   propertyId: string;
@@ -15,6 +15,8 @@ interface TransactionData {
  */
 export const recordTransaction = async (data: TransactionData) => {
   try {
+    const supabase = await getClient();
+
     // Get the current user
     const {
       data: { user },
@@ -67,6 +69,8 @@ export const verifyBlockchainTransaction = async (
  */
 export const getUserInvestments = async () => {
   try {
+    const supabase = await getClient();
+
     const {
       data: { user },
     } = await supabase.auth.getUser();

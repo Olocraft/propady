@@ -1,6 +1,6 @@
 "use server";
 
-import { supabase } from "@/db/db";
+import { getClient } from "@/db/db";
 
 export interface Property {
   id: string;
@@ -27,6 +27,8 @@ type Filters = {
   verified?: boolean;
 };
 export async function getProperties(filters?: Filters) {
+    const supabase = await getClient();
+
   let query = supabase.from("properties").select("*");
 
   if (filters) {
@@ -66,6 +68,8 @@ export async function getProperties(filters?: Filters) {
 }
 
 export async function getPropertyById(id: string) {
+    const supabase = await getClient();
+
   const { data, error } = await supabase
     .from("properties")
     .select("*")
@@ -83,6 +87,8 @@ export async function getPropertyById(id: string) {
 export async function createProperty(
   property: Omit<Property, "id" | "created_at" | "updated_at" | "owner_id">
 ) {
+    const supabase = await getClient();
+
   const { data: userData, error: userError } = await supabase.auth.getUser();
 
   if (userError) {
@@ -114,6 +120,8 @@ export async function updateProperty(
     Omit<Property, "id" | "created_at" | "updated_at" | "owner_id">
   >
 ) {
+    const supabase = await getClient();
+
   const { data, error } = await supabase
     .from("properties")
     .update({
@@ -132,6 +140,8 @@ export async function updateProperty(
 }
 
 export async function deleteProperty(id: string) {
+    const supabase = await getClient();
+ 
   const { error } = await supabase.from("properties").delete().eq("id", id);
 
   if (error) {
